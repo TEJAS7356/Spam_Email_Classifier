@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MailShield | Spam Classifier</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow"><span class="dot"></span> LOCAL MACHINE LEARNING TOOL</div>
+      <h1>Keep your inbox<br><span>clear and calm.</span></h1>
+      <p class="subtitle">Enter an email subject and message below. A TF-IDF + Multinomial Naive Bayes model will assess whether it looks like spam.</p>
+    </section>
+
+    <section class="card" aria-label="Email classifier">
+      <form method="post">
+        <div class="field-group">
+          <div class="label-row">
+            <label for="subject">Subject</label>
+            <span class="hint">Email subject line</span>
+          </div>
+          <input id="subject" name="subject" type="text" value="{{ subject }}" placeholder="e.g. Congratulations! You won a prize" autocomplete="off">
+        </div>
+
+        <div class="field-group message-group">
+          <div class="label-row">
+            <label for="message">Message</label>
+            <span class="hint">Email body</span>
+          </div>
+          <textarea id="message" name="message" placeholder="Paste or type the email message here..." autofocus>{{ message }}</textarea>
+        </div>
+
+        <div class="actions">
+          <button class="primary" type="submit">Classify email <span aria-hidden="true">→</span></button>
+          <a class="reset" href="{{ url_for('main.index') }}">Clear</a>
+        </div>
+      </form>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="notice {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      {% if result %}
+      <div class="result {{ 'spam' if result.is_spam else 'safe' }}" role="status">
+        <div class="result-icon">{{ '!' if result.is_spam else '✓' }}</div>
+        <div class="result-copy">
+          <div class="result-kicker">MODEL RESULT</div>
+          <h2>{{ result.label }}</h2>
+          <p>The model is <strong>{{ '%.1f'|format(result.confidence) }}% confident</strong> in this classification.</p>
+        </div>
+        <div class="meter-wrap" aria-label="Spam probability {{ '%.1f'|format(result.spam_probability) }} percent">
+          <div class="meter"><span style="width: {{ result.spam_probability }}%"></span></div>
+          <small>{{ '%.1f'|format(result.spam_probability) }}% spam probability</small>
+        </div>
+      </div>
+      {% endif %}
+    </section>
+
+    <footer>
+      <span>TF-IDF Vectorization</span><i>•</i><span>Multinomial Naive Bayes</span><i>•</i><span>Runs locally</span>
+    </footer>
+  </main>
+</body>
+</html>
